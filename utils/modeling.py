@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import joblib
+import pickle
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
@@ -339,10 +339,14 @@ def train_and_save(force_refresh: bool = False) -> ModelBundle:
     }
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    joblib.dump(final_models[FINAL_MODEL_NAME], MODEL_PATH)
-    joblib.dump(final_models, MODEL_COLLECTION_PATH)
-    joblib.dump(final_explainers, EXPLAINERS_PATH)
-    joblib.dump(final_vectorizer, VECTORIZER_PATH)
+    with open(MODEL_PATH, "wb") as _f:
+        pickle.dump(final_models[FINAL_MODEL_NAME], _f)
+    with open(MODEL_COLLECTION_PATH, "wb") as _f:
+        pickle.dump(final_models, _f)
+    with open(EXPLAINERS_PATH, "wb") as _f:
+        pickle.dump(final_explainers, _f)
+    with open(VECTORIZER_PATH, "wb") as _f:
+        pickle.dump(final_vectorizer, _f)
     METADATA_PATH.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return ModelBundle(
         model=final_models[FINAL_MODEL_NAME],
@@ -374,9 +378,12 @@ def load_or_train() -> ModelBundle:
     ):
         metadata = json.loads(METADATA_PATH.read_text(encoding="utf-8"))
         if _metadata_matches_dataset(metadata, dataset):
-            models = joblib.load(MODEL_COLLECTION_PATH)
-            explainers = joblib.load(EXPLAINERS_PATH)
-            vectorizer = joblib.load(VECTORIZER_PATH)
+            with open(MODEL_COLLECTION_PATH, "rb") as _f:
+                models = pickle.load(_f)
+            with open(EXPLAINERS_PATH, "rb") as _f:
+                explainers = pickle.load(_f)
+            with open(VECTORIZER_PATH, "rb") as _f:
+                vectorizer = pickle.load(_f)
             return ModelBundle(
                 model=models[metadata["final_model"]],
                 vectorizer=vectorizer,
