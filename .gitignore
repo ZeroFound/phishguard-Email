@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.DS_Store
+.streamlit/secrets.toml
+data/hf_phishing_email_dataset.csv
+
+# Word documents
+*.docx
+~$*.docx
